@@ -1264,94 +1264,105 @@ export function App() {
                       />
                     </div>
 
-                    {/* Flip Card */}
-                    <div className="perspective-1000">
-                      <div
-                        role="button"
-                        tabIndex={0}
-                        aria-pressed={flipped}
-                        aria-label={
-                          flipped
-                            ? `Flashcard back: ${currentFlashcard.back}. Click or press Space to show clue.`
-                            : `Flashcard front: ${currentFlashcard.front}. Click or press Space to reveal answer.`
-                        }
-                        onClick={() => {
+                    {/* Flip / Blur-Reveal Card */}
+                    <div
+                      key={currentFlashcard.id}
+                      role="button"
+                      tabIndex={0}
+                      aria-pressed={flipped}
+                      aria-label={
+                        flipped
+                          ? `Flashcard back: ${currentFlashcard.back}. Click or press Space to show clue.`
+                          : `Flashcard front: ${currentFlashcard.front}. Click or press Space to reveal answer.`
+                      }
+                      onClick={() => {
+                        playBeep(state.settings.sound, 'flip');
+                        setFlipped((f) => !f);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.code === 'Space') {
+                          e.preventDefault();
+                          e.stopPropagation();
                           playBeep(state.settings.sound, 'flip');
                           setFlipped((f) => !f);
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.code === 'Space') {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            playBeep(state.settings.sound, 'flip');
-                            setFlipped((f) => !f);
-                          }
-                        }}
-                        className={`preserve-3d relative min-h-[290px] w-full cursor-pointer rounded-3xl transition-transform duration-500 ${
-                          flipped ? 'rotate-y-180' : ''
+                        }
+                      }}
+                      className="animate-card-in relative min-h-[290px] w-full cursor-pointer rounded-3xl"
+                    >
+                      {/* Front (Clue) */}
+                      <div
+                        aria-hidden={flipped}
+                        className={`absolute inset-0 flex flex-col justify-between rounded-3xl border border-stone-200 bg-white p-6 shadow-sm transition-all duration-300 dark:border-zinc-800 dark:bg-zinc-900 sm:p-8 ${
+                          flipped
+                            ? 'pointer-events-none scale-95 opacity-0 blur-md'
+                            : 'scale-100 opacity-100 blur-none'
                         }`}
                       >
-                        {/* Front */}
-                        <div className="backface-hidden absolute inset-0 flex flex-col justify-between rounded-3xl border border-stone-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:p-8">
-                          <div className="flex flex-wrap items-center justify-between gap-2">
-                            <Badge tone="rose">
-                              {topicMap.get(currentFlashcard.topic)?.level ??
-                                currentFlashcard.topic}
-                            </Badge>
-                            {state.flashcards[currentFlashcard.id] ===
-                            'known' ? (
-                              <Badge tone="emerald">✓ Known</Badge>
-                            ) : state.flashcards[currentFlashcard.id] ===
-                              'review' ? (
-                              <Badge tone="amber">Review Again</Badge>
-                            ) : (
-                              <Badge>Clue</Badge>
-                            )}
-                          </div>
-                          <div className="my-auto py-4 text-center">
-                            {currentFlashcard.tf && (
-                              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-zinc-400">
-                                True or False Statement
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <Badge tone="rose">
+                            {topicMap.get(currentFlashcard.topic)?.level ??
+                              currentFlashcard.topic}
+                          </Badge>
+                          {state.flashcards[currentFlashcard.id] ===
+                          'known' ? (
+                            <Badge tone="emerald">✓ Known</Badge>
+                          ) : state.flashcards[currentFlashcard.id] ===
+                            'review' ? (
+                            <Badge tone="amber">Review Again</Badge>
+                          ) : (
+                            <Badge>Clue</Badge>
+                          )}
+                        </div>
+                        <div className="my-auto py-4 text-center">
+                          {currentFlashcard.tf && (
+                            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-zinc-400">
+                              True or False Statement
+                            </p>
+                          )}
+                          <p className="text-lg font-medium leading-relaxed text-stone-900 dark:text-zinc-100 sm:text-xl">
+                            {currentFlashcard.front}
+                          </p>
+                        </div>
+                        <p className="text-center text-xs text-stone-400 dark:text-zinc-500">
+                          Click or press Space to reveal answer
+                        </p>
+                      </div>
+
+                      {/* Back (Answer — blurred & hidden until flipped) */}
+                      <div
+                        aria-hidden={!flipped}
+                        className={`absolute inset-0 flex flex-col justify-between rounded-3xl border border-rose-200 bg-rose-50/40 p-6 shadow-sm transition-all duration-300 dark:border-rose-900/60 dark:bg-zinc-900 sm:p-8 ${
+                          flipped
+                            ? 'scale-100 opacity-100 blur-none'
+                            : 'pointer-events-none scale-95 select-none opacity-0 blur-md'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <Badge tone="emerald">Answer</Badge>
+                          <span className="text-xs text-stone-500 dark:text-zinc-400">
+                            {currentFlashcard.term}
+                          </span>
+                        </div>
+                        <div className="my-auto space-y-3 py-4 text-center">
+                          <p className="text-xl font-bold text-rose-700 dark:text-rose-300 sm:text-2xl">
+                            {currentFlashcard.back}
+                          </p>
+                          {currentFlashcard.alt &&
+                            currentFlashcard.alt.length > 0 && (
+                              <p className="text-xs text-stone-500 dark:text-zinc-400">
+                                Also accepted: {currentFlashcard.alt.join(', ')}
                               </p>
                             )}
-                            <p className="text-lg font-medium leading-relaxed text-stone-900 dark:text-zinc-100 sm:text-xl">
-                              {currentFlashcard.front}
-                            </p>
-                          </div>
-                          <p className="text-center text-xs text-stone-400 dark:text-zinc-500">
-                            Click or press Space to flip
-                          </p>
+                          {currentFlashcard.why && (
+                            <div className="mx-auto max-w-xl rounded-2xl border border-stone-200 bg-white/80 p-3 text-left text-sm text-stone-700 dark:border-zinc-800 dark:bg-zinc-950/70 dark:text-zinc-300">
+                              <span className="font-semibold">Why: </span>
+                              {currentFlashcard.why}
+                            </div>
+                          )}
                         </div>
-
-                        {/* Back */}
-                        <div className="backface-hidden rotate-y-180 absolute inset-0 flex flex-col justify-between rounded-3xl border border-rose-200 bg-rose-50/40 p-6 shadow-sm dark:border-rose-900/60 dark:bg-zinc-900 sm:p-8">
-                          <div className="flex items-center justify-between">
-                            <Badge tone="emerald">Answer</Badge>
-                            <span className="text-xs text-stone-500 dark:text-zinc-400">
-                              {currentFlashcard.term}
-                            </span>
-                          </div>
-                          <div className="my-auto space-y-3 py-4 text-center">
-                            <p className="text-xl font-bold text-rose-700 dark:text-rose-300 sm:text-2xl">
-                              {currentFlashcard.back}
-                            </p>
-                            {currentFlashcard.alt &&
-                              currentFlashcard.alt.length > 0 && (
-                                <p className="text-xs text-stone-500 dark:text-zinc-400">
-                                  Also accepted: {currentFlashcard.alt.join(', ')}
-                                </p>
-                              )}
-                            {currentFlashcard.why && (
-                              <div className="mx-auto max-w-xl rounded-2xl border border-stone-200 bg-white/80 p-3 text-left text-sm text-stone-700 dark:border-zinc-800 dark:bg-zinc-950/70 dark:text-zinc-300">
-                                <span className="font-semibold">Why: </span>
-                                {currentFlashcard.why}
-                              </div>
-                            )}
-                          </div>
-                          <p className="text-center text-xs text-stone-400 dark:text-zinc-500">
-                            Click or press Space to flip back
-                          </p>
-                        </div>
+                        <p className="text-center text-xs text-stone-400 dark:text-zinc-500">
+                          Click or press Space to hide answer
+                        </p>
                       </div>
                     </div>
 
