@@ -263,7 +263,7 @@ export function useAppStore() {
   const setName = useCallback((name: string) => {
     setState((prev) => ({
       ...prev,
-      name: name.trim() || COURSE_META.defaultStudentName,
+      name,
     }));
   }, []);
 

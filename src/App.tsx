@@ -628,7 +628,7 @@ export function App() {
                       {COURSE_META.subtitle}
                     </p>
                     <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
-                      Welcome back, {state.name} ♡
+                      Welcome back, {state.name.trim() || COURSE_META.defaultStudentName} ♡
                     </h1>
                     <p className="mt-1 text-sm text-stone-600 dark:text-zinc-400">
                       You got this! Review concepts, flip cards, and test yourself with spaced practice.
@@ -2395,7 +2395,14 @@ export function App() {
                       id="display-name-input"
                       type="text"
                       value={state.name}
+                      placeholder={COURSE_META.defaultStudentName}
                       onChange={(e) => setName(e.target.value)}
+                      onBlur={() => {
+                        const trimmed = state.name.trim();
+                        if (trimmed !== state.name) {
+                          setName(trimmed || COURSE_META.defaultStudentName);
+                        }
+                      }}
                       className="mt-1.5 w-full rounded-xl border border-stone-200 bg-white px-3.5 py-2.5 text-sm dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
                     />
                   </div>
